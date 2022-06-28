@@ -3,13 +3,15 @@ package proxyprotocol
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"net"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
 
-	"errors"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 )
 
 // Ref: https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt .
@@ -265,8 +267,11 @@ func (c *proxyProtocolConn) extraceClientIPV2(buffer []byte, connRemoteAddr net.
 	case 0x01: /* PROXY command */
 		switch famly {
 		case 0x11: /* TCPv4 */
-			srcAddrV4 := net.IP(buffer[v2AddrsPos+4 : v2AddrsPos+4+4])
-			srcPortV4 := binary.BigEndian.Uint16(buffer[v2AddrsPos+8+2 : v2AddrsPos+10+2])
+			originAddrV4 := net.IP(buffer[v2AddrsPos+4 : v2AddrsPos+4+4])
+			originPortV4 := binary.BigEndian.Uint16(buffer[v2AddrsPos+8+2 : v2AddrsPos+10+2])
+			log.Info("proxyprotocol origin ip/port", zap.Any("ip", originAddrV4), zap.Uint16("port", originPortV4))
+			srcAddrV4 := net.IP(buffer[v2AddrsPos : v2AddrsPos+4])
+			srcPortV4 := binary.BigEndian.Uint16(buffer[v2AddrsPos+8 : v2AddrsPos+10])
 			return &net.TCPAddr{
 				IP:   srcAddrV4,
 				Port: int(srcPortV4),
