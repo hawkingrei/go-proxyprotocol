@@ -269,9 +269,10 @@ func (c *proxyProtocolConn) extraceClientIPV2(buffer []byte, connRemoteAddr net.
 		case 0x11: /* TCPv4 */
 			originAddrV4 := net.IP(buffer[v2AddrsPos+4 : v2AddrsPos+4+4])
 			originPortV4 := binary.BigEndian.Uint16(buffer[v2AddrsPos+8+2 : v2AddrsPos+10+2])
-			log.Info("proxyprotocol origin ip/port", zap.Any("ip", originAddrV4), zap.Uint16("port", originPortV4))
 			srcAddrV4 := net.IP(buffer[v2AddrsPos : v2AddrsPos+4])
 			srcPortV4 := binary.BigEndian.Uint16(buffer[v2AddrsPos+8 : v2AddrsPos+10])
+			log.Info("proxyprotocol origin ip/port", zap.Any("dstip", originAddrV4), zap.Uint16("dstport", originPortV4),
+				zap.Any("srcAddrV4", srcAddrV4), zap.Uint16("srcPortV4", srcPortV4))
 			return &net.TCPAddr{
 				IP:   srcAddrV4,
 				Port: int(srcPortV4),
