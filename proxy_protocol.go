@@ -259,21 +259,21 @@ func (c *proxyProtocolConn) extractClientIPV1(buffer []byte, connRemoteAddr net.
 }
 
 func (c *proxyProtocolConn) extraceClientIPV2(buffer []byte, connRemoteAddr net.Addr) (net.Addr, error) {
-	verCmd := buffer[v2CmdPos]
 	famly := buffer[v2FamlyPos]
+	verCmd := buffer[v2CmdPos]
 	switch verCmd & 0x0F {
 	case 0x01: /* PROXY command */
 		switch famly {
 		case 0x11: /* TCPv4 */
-			srcAddrV4 := net.IP(buffer[v2AddrsPos : v2AddrsPos+4])
 			srcPortV4 := binary.BigEndian.Uint16(buffer[v2AddrsPos+8 : v2AddrsPos+10])
+			srcAddrV4 := net.IP(buffer[v2AddrsPos : v2AddrsPos+4])
 			return &net.TCPAddr{
 				IP:   srcAddrV4,
 				Port: int(srcPortV4),
 			}, nil
 		case 0x21: /* TCPv6 */
-			srcAddrV6 := net.IP(buffer[v2AddrsPos : v2AddrsPos+16])
 			srcPortV6 := binary.BigEndian.Uint16(buffer[v2AddrsPos+32 : v2AddrsPos+34])
+			srcAddrV6 := net.IP(buffer[v2AddrsPos : v2AddrsPos+16])
 			return &net.TCPAddr{
 				IP:   srcAddrV6,
 				Port: int(srcPortV6),
